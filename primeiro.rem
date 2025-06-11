@@ -1,0 +1,47 @@
+>>> Linguagem AUREM!
+$idade<int> = -25;
+$altura<float> = 1.75;
+$nome<string> = "true";
+$ativo<bool> = true;
+$lista<int[]> = {1, 2, 3, 4, 5};
+
+$entrada<int> = read(“Digite sua idade: ”);
+
+$idade += 1;
+$altura *= 1.01;
+
+if($entrada == $idade) {
+    print("Mesma idade!");
+} else if($entrada > $idade) {
+    print("Você é mais velho.");
+} else {
+    print("Você é mais novo.");
+}
+
+if($idade > 30) {
+    print("Idade não é maior que 30.");
+}
+
+if (idade % 2 == 0){
+    print("Idade par");
+}
+
+for ($i<int> = 0; $i < 5; $i += 1) {
+    print("for: " + $lista[$i]);
+}
+
+$i<int> = 0;
+while ($i < 3) {
+    print("while: " + $i);
+    $i += 1;
+}
+
+foreach ($item in $lista) {
+    print("foreach: " + $item);
+
+    if($item == 2){
+        continue;
+    }
+
+    break;
+}

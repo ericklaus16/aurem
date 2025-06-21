@@ -5,12 +5,13 @@ tokens = [
     ('SKIP', r'[ \t]+'),
     ('COMENTARIO', r'>>>[^\n]*'),
 
-    ('NUMERO',  r'[+-]?\d+(\.\d+)'),
+    ('NUMERO',  r'[+-]?\d+(\.\d+)?'),
     ('NATURAL', r'\d+'),
 
     ('STRING', r'"[^"\n]*"'),
 
     ('TIPO', r'\b(float|int|string|bool)\b'),
+    ('VETOR', r'\[\]'),
     ('BREAK', r'\bbreak\b'),
     ('CONTINUE', r'\bcontinue\b'),
     ('TRUE', r'\btrue\b'),
@@ -26,11 +27,41 @@ tokens = [
     
     ('ID', r'\$[a-zA-Z_][a-zA-Z0-9_]*'),
 
-    ('ARIT_OP', r'\+\+|--|==|!=|>=|<=|\+=|-=|\*=|/=|\^=|%|&&|\|\||\+|-|\*|/|!'),
-    ('LT', r'<'),
-    ('GT', r'>'),
-
-    ('OP', r'[=;,\[\]\{\}\(\)]'),
+    ('INCREMENTO', r'\+\+'),
+    ('DECREMENTO', r'--'),
+    ('IGUAL', r'=='),
+    ('DIFERENTE', r'!='),
+    ('MAIOR_IGUAL', r'>='),
+    ('MENOR_IGUAL', r'<='),
+    ('MAIS_IGUAL', r'\+='),
+    ('MENOS_IGUAL', r'-='),
+    ('MULT_IGUAL', r'\*='),
+    ('DIV_IGUAL', r'/='),
+    ('POT_IGUAL', r'\^='),
+    ('AND_LOGICO', r'&&'),
+    ('OR_LOGICO', r'\|\|'),
+    ('MODULO', r'%'),
+    ('POTENCIA', r'\^'),
+    ('NOT', r'!'),
+    ('MAIS', r'\+'),
+    ('MENOS', r'-'),
+    ('MULT', r'\*'),
+    ('DIV', r'/'),
+    
+    # Operadores relacionais
+    ('MENOR', r'<'),
+    ('MAIOR', r'>'),
+    
+    # Símbolos especiais
+    ('ATRIBUICAO', r'='),
+    ('PONTO_VIRGULA', r';'),
+    ('VIRGULA', r','),
+    ('ABRE_PAREN', r'\('),
+    ('FECHA_PAREN', r'\)'),
+    ('ABRE_COLCHETE', r'\['),
+    ('FECHA_COLCHETE', r'\]'),
+    ('ABRE_CHAVE', r'\{'),
+    ('FECHA_CHAVE', r'\}'),
 
     ('MISMATCH', r'.')
 ]

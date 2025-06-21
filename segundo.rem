@@ -1,0 +1,36 @@
+>>> Linguagem AUREM!
+
+$nome<string> = "Ana";
+$idade<int> = 30;
+$altura<float> = 1.68;
+$ativo<bool> = false;
+$notas<float[]> = {8.5, 7.0, 9.2, 6.8};
+$aprovado<bool> = true;
+
+print("Informe seu nome:");
+$nome = read("");
+
+if($idade >= 18) {
+    print("Você é maior de idade.");
+} else {
+    print("Você é menor de idade.");
+}
+
+for ($i<int> = 0; $i < 4; $i += 1) {
+    print("Nota " + $i + ": " + $notas[$i]);
+}
+
+$i<int> = 0;
+while ($i < 3) {
+    if ($notas[$i] < 7) {
+        print("Nota " + $i + " é insuficiente.");
+        $aprovado = false;
+    }
+    $i += 1;
+}
+
+if ($aprovado == true) {
+    print("Aluno aprovado!");
+} else {
+    print("Aluno reprovado.");
+}

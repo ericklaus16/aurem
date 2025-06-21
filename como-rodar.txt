@@ -1,0 +1,4 @@
+Para rodar o programa, basta executar o arquivo python "aurem.py". 
+
+O programa pede inicialmente um arquivo código fonte para ser passado pelo analisador léxico, 
+basta digitar "primeiro.rem" (sem aspas) ou qualquer outro código fonte da linguagem.

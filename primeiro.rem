@@ -1,5 +1,5 @@
 >>> Linguagem AUREM!
-$idade<int> = -25;
+$ idade<int> = -25;
 $altura<float> = 1.75;
 $nome<string> = "true";
 $ativo<bool> = true;

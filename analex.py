@@ -1,14 +1,14 @@
 import re
 
 tokens = [                
-    ('NUMBER',  r'[+-]?\d+(\.\d+)'),
+    ('NUMERO',  r'[+-]?\d+(\.\d+)'),
     ('NATURAL', r'\d+'),
     ('ID', r'\$[a-zA-Z_][a-zA-Z0-9_]*'),
-    ('COMMENT', r'>>>[^\n]*'),
+    ('COMENTARIO', r'>>>[^\n]*'),
     ('LT', r'<'),
     ('GT', r'>'),
-    ('TYPE', r'\b(float|int|string|bool)\b'),
-    ('ARIT_OP', r'==|!=|>=|<= | > | < | \+=|-=|\*=|/=|\^=|%|\|!'),
+    ('TIPO', r'\b(float|int|string|bool)\b'),
+    ('OP_ARIT', r'==|!=|>=|<=|>|<|\+=|-=|\*=|/=|\^=|%|\|!'),
     ('OP', r'[=;,\[\]\{\}\(\)]'),
     ('NEWLINE', r'\n'),
     ('SKIP', r'[ \t]+'),
@@ -20,7 +20,8 @@ tokens = [
     ('FOR', r'\bfor\b'),
     ('IF', r'\bif\b'),
     ('ELSE', r'\belse\b'),
-    ('WHILE', r'\bwhile\b')
+    ('WHILE', r'\bwhile\b'),
+    ('MISMATCH', r'.')
 ]
 
 tok_regex = '|'.join(f'(?P<{name}>{pattern})' for name, pattern in tokens)

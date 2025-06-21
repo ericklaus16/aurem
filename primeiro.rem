@@ -1,11 +1,11 @@
 >>> Linguagem AUREM!
-$ idade<int> = -25;
+$idade<int> = 25;
 $altura<float> = 1.75;
 $nome<string> = "true";
 $ativo<bool> = true;
 $lista<int[]> = {1, 2, 3, 4, 5};
 
-$entrada<int> = read(“Digite sua idade: ”);
+$entrada<int> = read("Digite sua idade: ");
 
 $idade += 1;
 $altura *= 1.01;
@@ -19,10 +19,14 @@ if($entrada == $idade) {
 }
 
 if($idade > 30) {
-    print("Idade não é maior que 30.");
+    print("Idade é maior que 30.");
+} else if ($idade > 15){
+    print("Idade é maior que 15");
+} else {
+    print ("Idade é menor que 15");
 }
 
-if (idade % 2 == 0){
+if($idade % 2 == 0){
     print("Idade par");
 }
 
@@ -34,14 +38,4 @@ $i<int> = 0;
 while ($i < 3) {
     print("while: " + $i);
     $i += 1;
-}
-
-foreach ($item in $lista) {
-    print("foreach: " + $item);
-
-    if($item == 2){
-        continue;
-    }
-
-    break;
 }

@@ -1,17 +1,16 @@
 import re
 
-tokens = [                
-    ('NUMERO',  r'[+-]?\d+(\.\d+)'),
-    ('NATURAL', r'\d+'),
-    ('ID', r'\$[a-zA-Z_][a-zA-Z0-9_]*'),
-    ('COMENTARIO', r'>>>[^\n]*'),
-    ('LT', r'<'),
-    ('GT', r'>'),
-    ('TIPO', r'\b(float|int|string|bool)\b'),
-    ('OP_ARIT', r'==|!=|>=|<=|>|<|\+=|-=|\*=|/=|\^=|%|\|!'),
-    ('OP', r'[=;,\[\]\{\}\(\)]'),
+tokens = [      
     ('NEWLINE', r'\n'),
     ('SKIP', r'[ \t]+'),
+    ('COMENTARIO', r'>>>[^\n]*'),
+
+    ('NUMERO',  r'[+-]?\d+(\.\d+)'),
+    ('NATURAL', r'\d+'),
+
+    ('STRING', r'"[^"\n]*"'),
+
+    ('TIPO', r'\b(float|int|string|bool)\b'),
     ('BREAK', r'\bbreak\b'),
     ('CONTINUE', r'\bcontinue\b'),
     ('TRUE', r'\btrue\b'),
@@ -19,8 +18,20 @@ tokens = [
     ('RETURN', r'\breturn\b'),
     ('FOR', r'\bfor\b'),
     ('IF', r'\bif\b'),
+    ('ELSEIF', r'\belse if\b'),
     ('ELSE', r'\belse\b'),
     ('WHILE', r'\bwhile\b'),
+    ('READ', r'\bread\b'),
+    ('PRINT', r'\bprint\b'),
+    
+    ('ID', r'\$[a-zA-Z_][a-zA-Z0-9_]*'),
+
+    ('ARIT_OP', r'\+\+|--|==|!=|>=|<=|\+=|-=|\*=|/=|\^=|%|&&|\|\||\+|-|\*|/|!'),
+    ('LT', r'<'),
+    ('GT', r'>'),
+
+    ('OP', r'[=;,\[\]\{\}\(\)]'),
+
     ('MISMATCH', r'.')
 ]
 

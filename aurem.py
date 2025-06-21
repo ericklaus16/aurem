@@ -1,6 +1,7 @@
 import analex
 
-aurem_file_location = str(input("Type the aurem source code location: "))
+# aurem_file_location = str(input("Type the aurem source code location: "))
+aurem_file_location = "primeiro.rem"
 
 code = []
 tokens = []

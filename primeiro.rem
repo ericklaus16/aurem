@@ -1,5 +1,5 @@
 >>> Linguagem AUREM!
-$idade<int> = -25;
+$idade<int> = 25;
 $alunos<string[]> = {"Eric", "Matheus", "Ruan"}; 
 $altura<float> = 1.75;
 $nome<string> = "true";

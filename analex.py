@@ -19,7 +19,7 @@ tokens = [
     ('RETURN', r'\breturn\b'),
     ('FOR', r'\bfor\b'),
     ('IF', r'\bif\b'),
-    ('ELSEIF', r'\belse if\b'),
+    ('ELSEIF', r'\belse\s+if\b'),
     ('ELSE', r'\belse\b'),
     ('WHILE', r'\bwhile\b'),
     ('READ', r'\bread\b'),
@@ -76,7 +76,7 @@ def tokenize(code):
         value = mo.group()
         if kind == 'NEWLINE':
             line_num += 1
-        elif kind == 'SKIP': # or kind == 'COMMENT'
+        elif kind == 'SKIP' or kind == 'COMENTARIO': 
             continue
         elif kind == 'MISMATCH':
             raise RuntimeError(f'Erro léxico na linha {line_num}: caractere inesperado {value!r}')

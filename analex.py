@@ -16,7 +16,6 @@ tokens = [
     ('CONTINUE', r'\bcontinue\b'),
     ('TRUE', r'\btrue\b'),
     ('FALSE', r'\bfalse\b'),
-    ('RETURN', r'\breturn\b'),
     ('FOR', r'\bfor\b'),
     ('IF', r'\bif\b'),
     ('ELSEIF', r'\belse\s+if\b'),

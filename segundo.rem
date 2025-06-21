@@ -1,4 +1,4 @@
->>> Linguagem AUREM!
+>>> Isso é um comentário!
 
 $nome<string> = "Ana";
 $idade<int> = 30;

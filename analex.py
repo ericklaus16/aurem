@@ -11,7 +11,7 @@ tokens = [
     ('STRING', r'"[^"\n]*"'),
 
     ('TIPO', r'\b(float|int|string|bool)\b'),
-    ('VETOR', r'\[\]'),
+    ('VETOR', r'\[(\d)*\]'),
     ('BREAK', r'\bbreak\b'),
     ('CONTINUE', r'\bcontinue\b'),
     ('TRUE', r'\btrue\b'),
@@ -26,26 +26,8 @@ tokens = [
     
     ('ID', r'\$[a-zA-Z_][a-zA-Z0-9_]*'),
 
-    ('INCREMENTO', r'\+\+'),
-    ('DECREMENTO', r'--'),
-    ('IGUAL', r'=='),
-    ('DIFERENTE', r'!='),
-    ('MAIOR_IGUAL', r'>='),
-    ('MENOR_IGUAL', r'<='),
-    ('MAIS_IGUAL', r'\+='),
-    ('MENOS_IGUAL', r'-='),
-    ('MULT_IGUAL', r'\*='),
-    ('DIV_IGUAL', r'/='),
-    ('POT_IGUAL', r'\^='),
-    ('AND_LOGICO', r'&&'),
-    ('OR_LOGICO', r'\|\|'),
-    ('MODULO', r'%'),
-    ('POTENCIA', r'\^'),
-    ('NOT', r'!'),
-    ('MAIS', r'\+'),
-    ('MENOS', r'-'),
-    ('MULT', r'\*'),
-    ('DIV', r'/'),
+    ('OP_REL', r'\+\+|--|==|!=|>=|<=|\+=|-=|\*=|/=|\^=|&&|\|\|'),
+    ('OP_ARIT', r'%|\^|!|\+|-|\*|/'),
     
     # Operadores relacionais
     ('MENOR', r'<'),
@@ -78,7 +60,7 @@ def tokenize(code):
         elif kind == 'SKIP' or kind == 'COMENTARIO': 
             continue
         elif kind == 'MISMATCH':
-            raise RuntimeError(f'Erro léxico na linha {line_num}: caractere inesperado {value!r}')
+            print(f'Erro léxico na linha {line_num}: caractere inesperado {value!r}')
         else:
             tokens.append((kind, value, line_num))
     return tokens

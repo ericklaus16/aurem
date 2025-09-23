@@ -72,6 +72,7 @@ for prods in grammar.values():
 
 FIRST = defaultdict(set)
 FOLLOW = defaultdict(set)
+PARSE_TABLE = defaultdict(dict)
 
 def compute_first(symbol):
     if symbol in terminals:
@@ -125,10 +126,32 @@ def compute_follow():
                                 FOLLOW[B] |= FOLLOW[A]
                                 updated = True
 
+def compute_parse_table():
+    for A in grammar:
+        for prod in grammar[A]:
+            # Regra 1: Para cada terminal x em FIRST(α)
+            first_alpha = set()
+            for sym in prod:
+                sym_first = compute_first(sym)
+                first_alpha |= (sym_first - {"ε"})
+                if "ε" not in sym_first:
+                    break
+            else:
+                first_alpha.add("ε")
+            for terminal in first_alpha:
+                if terminal != "ε":
+                    PARSE_TABLE[A][terminal] = prod
+            # Regra 2: Se ε ∈ FIRST(α), para cada b em FOLLOW(A)
+            if "ε" in first_alpha:
+                for b in FOLLOW[A]:
+                    PARSE_TABLE[A][b] = prod
+
+
 for nt in non_terminals:
     compute_first(nt)
 
 compute_follow()
+compute_parse_table()
 
 # print(f"{'Não-Terminal':<10} {'First':<20} {'Follow'}")
 # for nt in non_terminals:
@@ -138,7 +161,28 @@ data = []
 for nt in non_terminals:
     data.append([nt, ", ".join(sorted(FIRST[nt])), ", ".join(sorted(FOLLOW[nt]))])
 
-df = pd.DataFrame(data, columns=["Não-Terminal", "FIRST", "FOLLOW"])
-df.to_excel("first_follow_tabela.xlsx", index=False)
+with pd.ExcelWriter("tabela_completa.xlsx") as writer:
+    # Aba FIRST/FOLLOW
+    df = pd.DataFrame(
+        [[nt, ", ".join(sorted(FIRST[nt])), ", ".join(sorted(FOLLOW[nt]))] for nt in non_terminals],
+        columns=["Não-Terminal", "FIRST", "FOLLOW"]
+    )
+    df.to_excel(writer, sheet_name="FIRST_FOLLOW", index=False)
 
-print("Tabela salva em 'first_follow_tabela.xlsx'")
+    # Aba Tabela Sintática Preditiva (matriz)
+    all_terminals = sorted(terminals | {"$"})
+    matrix = []
+    for nt in non_terminals:
+        row = []
+        for t in all_terminals:
+            prod = PARSE_TABLE[nt].get(t)
+            if prod:
+                row.append(" ".join(prod))
+            else:
+                row.append("")
+        matrix.append(row)
+    df_matrix = pd.DataFrame(matrix, columns=all_terminals, index=non_terminals)
+    df_matrix.index.name = "Não-Terminal"
+    df_matrix.to_excel(writer, sheet_name="PARSE_TABLE", index=True)
+
+print("Tudo salvo em 'tabela_completa.xlsx'")

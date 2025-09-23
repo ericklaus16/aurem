@@ -60,7 +60,8 @@ def tokenize(code):
         elif kind == 'SKIP' or kind == 'COMENTARIO': 
             continue
         elif kind == 'MISMATCH':
-            print(f'Erro léxico na linha {line_num}: caractere inesperado {value!r}')
+            if re.match(r'\W', value):
+                print(f'Erro léxico na linha {line_num}: símbolo inesperado {value!r}')
         else:
             tokens.append((kind, value, line_num))
     return tokens

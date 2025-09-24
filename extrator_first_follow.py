@@ -3,38 +3,49 @@ import pandas as pd
 
 grammar = {
     "Programa": [["ListaDados", "ListaComandos"]],
+
     "Tipo": [["Primitivos", "SufixoTipo"]],
     "Primitivos": [["int"], ["float"], ["string"], ["bool"]],
     "SufixoTipo": [["[", "]"], ["ε"]],
+
     "ListaDados": [["Dado", "ListaDados"], ["ε"]],
     "Dado": [["$id", "<", "Tipo", ">", "AtribuicaoVariavel", ";"]],
     "AtribuicaoVariavel": [["OPERADOR_ATRIB", "Expr"], ["ε"]],
 
     "ListaComandos": [["Comando", "ListaComandos"], ["ε"]],
     "Comando": [
-        ["Atribuicao"],
-        ["if", "(", "Expr", ")", "Comando", "RestoIf"],
-        ["while", "(", "Expr", ")", "Comando"],
-        ["for", "(", "ForInit", ";", "Expr", ";", "Atribuicao", ")"],
-        ["{", "ListaComandos", "}"],
-        ["read", "(", "id", ")", ";"],
-        ["print", "(", "string", "PRINT_TAIL", ")", ";"]
+        ["IfCommand"],
+        ["WhileCommand"],
+        ["ForCommand"],
+        ["BlockCommand"],
+        ["ReadCommand"],
+        ["PrintCommand"],
+        ["AtribuicaoCommand"]
     ],
 
-    "PRINT_TAIL": [["+", "Factor", "PRINT_TAIL"], ["ε"]],
+    "IfCommand": [["if", "(", "Expr", ")", "Comando", "RestoIf"]],
     "RestoIf": [["else", "Comando"], ["ε"]],
-    "Atribuicao": [["$id", "OPERADOR_ATRIB", "Expr"]],
-    "ForInit": [["Dado"], ["Atribuicao"]],
+
+    "WhileCommand": [["while", "(", "Expr", ")", "Comando"]],
+    "ForCommand": [["for", "(", "ForInit", ";", "Expr", ";", "Atribuicao", ")"]],
+    "BlockCommand": [["{", "ListaComandos", "}"]],
+    "ReadCommand": [["read", "(", "$id", ")", ";"]],
+    "PrintCommand": [["print", "(", "string", "PRINT_TAIL", ")", ";"]],
+    "AtribuicaoCommand": [["$id", "OPERADOR_ATRIB", "Expr", ";"]],
+
+    "ForInit": [["Dado"], ["$id", "OPERADOR_ATRIB", "Expr"]],
+    "PRINT_TAIL": [["+", "Factor", "PRINT_TAIL"], ["ε"]],
 
     "OPERADOR_LOGICO": [["!="], ["<"], [">"], ["=="], [">="], ["<="]],
     "OPERADOR_ATRIB": [["="], ["+="], ["-="], ["*="], ["/="], ["%="]],
 
-    "Expr": [["ExpressaoAritmetica", "ExprR"]],
-    "ExprR": [["OPERADOR_LOGICO", "ExpressaoAritmetica"], ["ExprPrime"]],
+    "Expr": [["ExpressaoAritmetica", "ExprLogicTail"]],
+    "ExprLogicTail": [["OPERADOR_LOGICO", "ExpressaoAritmetica"], ["ε"]],
+
+    "ExpressaoAritmetica": [["Term", "ExprPrime"]],
     "ExprPrime": [["AddOp", "Term", "ExprPrime"], ["ε"]],
     "AddOp": [["+"], ["-"]],
 
-    "ExpressaoAritmetica": [["Term", "ExprPrime"]],
     "Term": [["Factor", "TermPrime"]],
     "TermPrime": [["MulOp", "Factor", "TermPrime"], ["ε"]],
     "MulOp": [["*"], ["/"], ["%"]],
@@ -44,22 +55,17 @@ grammar = {
         ["$id"],
         ["num"],
         ["string"],
-        ["bool"],
+        ["BoolLiteral"],
         ["AtrRead"],
         ["ArrayLiteral"],
         ["IndexAccess"]
     ],
-    "bool": [["true"], ["false"]],
+    "BoolLiteral": [["true"], ["false"]],
     "ArrayLiteral": [["{", "ListaExpr", "}"]],
     "IndexAccess": [["$id", "[", "Expr", "]"]],
     "ListaExpr": [["Expr", "ListaExprTail"], ["ε"]],
     "ListaExprTail": [[",", "Expr", "ListaExprTail"], ["ε"]],
     "AtrRead": [["read", "(", "string", ")"]],
-    "int": [["[0-9]+"]],
-    "float": [["[+-]?[0-9]+(\\.[0-9]+)?"]],
-    "id": [["\\$?[a-zA-Z_][a-zA-Z0-9_]*"]],
-    "string": [["\"([^\"\\n])*\""]],
-    "Comentario": [['>>>[^\\n]*']]
 }
 
 non_terminals = list(grammar.keys())
@@ -70,9 +76,18 @@ for prods in grammar.values():
             if sym not in grammar and sym != "ε":
                 terminals.add(sym)
 
+terminals.update(['=', '+=', '-=', '*=', '/=', '%=', '!=', '<', '>', '==', '>=', '<=', '+', '-', '*', '/', '%'])
+
 FIRST = defaultdict(set)
 FOLLOW = defaultdict(set)
 PARSE_TABLE = defaultdict(dict)
+CONFLICTS = []
+
+def _add_entry(A, t, prod):
+    if t in PARSE_TABLE[A] and PARSE_TABLE[A][t] != prod:
+        CONFLICTS.append((A, t, " ".join(PARSE_TABLE[A][t]), " ".join(prod)))
+        return
+    PARSE_TABLE[A][t] = prod
 
 def compute_first(symbol):
     if symbol in terminals:
@@ -140,11 +155,11 @@ def compute_parse_table():
                 first_alpha.add("ε")
             for terminal in first_alpha:
                 if terminal != "ε":
-                    PARSE_TABLE[A][terminal] = prod
+                    _add_entry(A, terminal, prod)
             # Regra 2: Se ε ∈ FIRST(α), para cada b em FOLLOW(A)
             if "ε" in first_alpha:
                 for b in FOLLOW[A]:
-                    PARSE_TABLE[A][b] = prod
+                    _add_entry(A, b, prod)
 
 
 for nt in non_terminals:
@@ -186,3 +201,8 @@ with pd.ExcelWriter("tabela_completa.xlsx") as writer:
     df_matrix.to_excel(writer, sheet_name="PARSE_TABLE", index=True)
 
 print("Tudo salvo em 'tabela_completa.xlsx'")
+
+if CONFLICTS:
+    print("Aviso: conflitos LL(1) detectados (mantida a 1ª produção):")
+    for A, t, p1, p2 in CONFLICTS:
+        print(f"M[{A}, {t}] já tinha '{p1}', ignorando '{p2}'")

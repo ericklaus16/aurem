@@ -72,3 +72,69 @@ grammar = {
     "atrib-decl": [["id", ":=", "exp"]],
     "ativ-decl": [["id(exp-list)"]],
 }
+
+grammar = {
+    "Programa": [["ListaDados", "ListaComandos"]],
+
+    "Tipo": [["Primitivos", "SufixoTipo"]],
+    "Primitivos": [["int"], ["float"], ["string"], ["bool"]],
+    "SufixoTipo": [["[", "]"], ["ε"]],
+
+    "ListaDados": [["$id", "<", "Tipo", ">", "AtribuicaoVariavel", ";", "ListaDados"], ["ε"]],
+    "AtribuicaoVariavel": [["OPERADOR_ATRIB", "Expr"], ["ε"]],
+
+    "ListaComandos": [["Comando", "ListaComandos"], ["ε"]],
+    "Comando": [
+        ["IfCommand"],
+        ["WhileCommand"],
+        ["ForCommand"],
+        ["BlockCommand"],
+        ["ReadCommand"],
+        ["PrintCommand"],
+        ["AtribuicaoCommand"]
+    ],
+
+    "IfCommand": [["if", "(", "Expr", ")", "Comando", "RestoIf"]],
+    "RestoIf": [["else", "Comando"], ["ε"]],
+
+    "WhileCommand": [["while", "(", "Expr", ")", "Comando"]],
+    "ForCommand": [["for", "(", "ForInit", ";", "Expr", ";", "Atribuicao", ")"]],
+    "BlockCommand": [["{", "ListaComandos", "}"]],
+    "ReadCommand": [["read", "(", "$id", ")", ";"]],
+    "PrintCommand": [["print", "(", "string", "PRINT_TAIL", ")", ";"]],
+    "AtribuicaoCommand": [["$id", "OPERADOR_ATRIB", "Expr", ";"]],
+
+    "ForInit": [["Dado"], ["$id", "OPERADOR_ATRIB", "Expr"]],
+    "PRINT_TAIL": [["+", "Factor", "PRINT_TAIL"], ["ε"]],
+
+    "OPERADOR_LOGICO": [["!="], ["<"], [">"], ["=="], [">="], ["<="]],
+    "OPERADOR_ATRIB": [["="], ["+="], ["-="], ["*="], ["/="], ["%="]],
+
+    "Expr": [["ExpressaoAritmetica", "ExprLogicTail"]],
+    "ExprLogicTail": [["OPERADOR_LOGICO", "ExpressaoAritmetica"], ["ε"]],
+
+    "ExpressaoAritmetica": [["Term", "ExprPrime"]],
+    "ExprPrime": [["AddOp", "Term", "ExprPrime"], ["ε"]],
+    "AddOp": [["+"], ["-"]],
+
+    "Term": [["Factor", "TermPrime"]],
+    "TermPrime": [["MulOp", "Factor", "TermPrime"], ["ε"]],
+    "MulOp": [["*"], ["/"], ["%"]],
+
+    "Factor": [
+        ["(", "Expr", ")"],
+        ["$id", "FactorPrime"],
+        ["num"],
+        ["string"],
+        ["BoolLiteral"],
+        ["AtrRead"],
+        ["ArrayLiteral"]
+    ],
+    "FactorPrime": [["[", "Expr", "]"], ["ε"]],
+
+    "BoolLiteral": [["true"], ["false"]],
+    "ArrayLiteral": [["{", "ListaExpr", "}"]],
+    "ListaExpr": [["Expr", "ListaExprTail"], ["ε"]],
+    "ListaExprTail": [[",", "Expr", "ListaExprTail"], ["ε"]],
+    "AtrRead": [["read", "(", "string", ")"]],
+}

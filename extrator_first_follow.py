@@ -2,38 +2,43 @@ from collections import defaultdict
 import pandas as pd
 
 grammar = {
-    "Programa": [["ListaDados", "ListaComandos"]],
-
-    "Tipo": [["Primitivos", "SufixoTipo"]],
-    "Primitivos": [["int"], ["float"], ["string"], ["bool"]],
-    "SufixoTipo": [["[", "]"], ["ε"]],
-
-    "ListaDados": [["Dado", "ListaDados"], ["ε"]],
-    "Dado": [["$id", "<", "Tipo", ">", "AtribuicaoVariavel", ";"]],
-    "AtribuicaoVariavel": [["OPERADOR_ATRIB", "Expr"], ["ε"]],
-
+    "Programa": [["ListaComandos"]],
     "ListaComandos": [["Comando", "ListaComandos"], ["ε"]],
-    "Comando": [
-        ["IfCommand"],
+
+    "Comando": [["IfCommand"], ["Other"]],
+
+    # If com else opcional
+    "IfCommand": [["if", "(", "Expr", ")", "Comando", "RestoIf"]],
+    "RestoIf": [["else", "Comando"], ["ε"]],
+
+    "Other": [
+        ["$id", "SufixoId"],
         ["WhileCommand"],
         ["ForCommand"],
         ["BlockCommand"],
         ["ReadCommand"],
-        ["PrintCommand"],
-        ["AtribuicaoCommand"]
+        ["PrintCommand"]
     ],
 
-    "IfCommand": [["if", "(", "Expr", ")", "Comando", "RestoIf"]],
-    "RestoIf": [["else", "Comando"], ["ε"]],
+    "SufixoId": [
+        ["<", "Tipo", ">", "AtribuicaoVariavel", ";"],
+        ["OPERADOR_ATRIB", "Expr", ";"]
+    ],
+
+    "Tipo": [["Primitivos", "SufixoTipo"]],
+    "Primitivos": [["int"], ["float"], ["string"], ["bool"]],
+    "SufixoTipo": [["[", "]"], ["ε"]],
+    "AtribuicaoVariavel": [["OPERADOR_ATRIB", "Expr"], ["ε"]],
 
     "WhileCommand": [["while", "(", "Expr", ")", "Comando"]],
     "ForCommand": [["for", "(", "ForInit", ";", "Expr", ";", "Atribuicao", ")"]],
     "BlockCommand": [["{", "ListaComandos", "}"]],
     "ReadCommand": [["read", "(", "$id", ")", ";"]],
     "PrintCommand": [["print", "(", "string", "PRINT_TAIL", ")", ";"]],
-    "AtribuicaoCommand": [["$id", "OPERADOR_ATRIB", "Expr", ";"]],
+    "Atribuicao": [["$id", "OPERADOR_ATRIB", "Expr"]],
 
-    "ForInit": [["Dado"], ["$id", "OPERADOR_ATRIB", "Expr"]],
+    "ForInit": [["$id", "ForInitAfter"]],
+    "ForInitAfter": [["<", "Tipo", ">", "AtribuicaoVariavel"], ["OPERADOR_ATRIB", "Expr"]],
     "PRINT_TAIL": [["+", "Factor", "PRINT_TAIL"], ["ε"]],
 
     "OPERADOR_LOGICO": [["!="], ["<"], [">"], ["=="], [">="], ["<="]],
@@ -52,17 +57,16 @@ grammar = {
 
     "Factor": [
         ["(", "Expr", ")"],
-        ["$id"],
+        ["$id", "FactorPrime"],
         ["num"],
         ["string"],
         ["BoolLiteral"],
         ["AtrRead"],
-        ["ArrayLiteral"],
-        ["IndexAccess"]
+        ["ArrayLiteral"]
     ],
+    "FactorPrime": [["[", "Expr", "]"], ["ε"]],
     "BoolLiteral": [["true"], ["false"]],
     "ArrayLiteral": [["{", "ListaExpr", "}"]],
-    "IndexAccess": [["$id", "[", "Expr", "]"]],
     "ListaExpr": [["Expr", "ListaExprTail"], ["ε"]],
     "ListaExprTail": [[",", "Expr", "ListaExprTail"], ["ε"]],
     "AtrRead": [["read", "(", "string", ")"]],
@@ -159,8 +163,8 @@ def compute_parse_table():
             # Regra 2: Se ε ∈ FIRST(α), para cada b em FOLLOW(A)
             if "ε" in first_alpha:
                 for b in FOLLOW[A]:
-                    _add_entry(A, b, prod)
-
+                    if b not in PARSE_TABLE[A]:       
+                        PARSE_TABLE[A][b] = prod
 
 for nt in non_terminals:
     compute_first(nt)

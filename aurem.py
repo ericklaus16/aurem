@@ -1,8 +1,7 @@
 import analex
 from extrator_first_follow import PARSE_TABLE, terminals, FOLLOW
 
-# aurem_file_location = str(input("Type the aurem source code location: "))
-aurem_file_location = "./primeiro.rem"
+aurem_file_location = str(input("Type the aurem source code location: "))
 code = []
 
 with open(aurem_file_location, "r", encoding="utf-8") as aurem_file:
@@ -11,10 +10,6 @@ with open(aurem_file_location, "r", encoding="utf-8") as aurem_file:
 
 # Análise léxica
 tokens = analex.tokenize("".join(code))
-
-# for t in tokens:
-#     print(t)
-
 
 def normalize_tokens(tokens):
     out = []
@@ -99,13 +94,12 @@ def parse(tokens, parse_table, start_symbol="Programa"):
                 stack.pop()  # descarta X
             else:
                 errors.append(f"Linha {a_line}: símbolo inesperado '{a_lex}', descartando token")
-                i += 1       # descarta token de entrada
+                i += 1     
 
             # evita loop infinito
             if i >= len(toks):
                 break
 
-    # relatório
     if errors:
         print("Erros encontrados:")
         for e in errors:

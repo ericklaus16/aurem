@@ -204,8 +204,6 @@ with pd.ExcelWriter("tabela_completa.xlsx") as writer:
     df_matrix.index.name = "Não-Terminal"
     df_matrix.to_excel(writer, sheet_name="PARSE_TABLE", index=True)
 
-print("Tudo salvo em 'tabela_completa.xlsx'")
-
 if CONFLICTS:
     print("Aviso: conflitos LL(1) detectados (mantida a 1ª produção):")
     for A, t, p1, p2 in CONFLICTS:

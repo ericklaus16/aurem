@@ -11,7 +11,7 @@ tokens = [
     ('STRING', r'"[^"\n]*"'),
 
     ('TIPO', r'\b(float|int|string|bool)\b'),
-    ('VETOR', r'\[(\d)*\]'),
+    ('VETOR', r'\[\]'),
     ('BREAK', r'\bbreak\b'),
     ('CONTINUE', r'\bcontinue\b'),
     ('TRUE', r'\btrue\b'),

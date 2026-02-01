@@ -2,3 +2,4 @@ venv/
 *.xlsx
 __pycache__/
 *.pyc
+*.3ac

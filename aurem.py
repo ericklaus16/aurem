@@ -1,6 +1,8 @@
 import analex
+import os
 from extrator_first_follow import PARSE_TABLE, terminals, FOLLOW
 from anasem import analisar_semantica
+from gercodint import gerar_codigo_intermediario, formatar_codigo, salvar_codigo
 
 # aurem_file_location = str(input("Type the aurem source code location: "))
 code = []
@@ -167,3 +169,35 @@ if resultado:
         print(passo)
     if len(resultado) > 20:
         print(f"... e mais {len(resultado) - 20} produções")
+
+# Geração de Código Intermediário (apenas se não houver erros)
+if total_erros == 0:
+    print("\n" + "="*60)
+    print("GERAÇÃO DE CÓDIGO INTERMEDIÁRIO DE 3 ENDEREÇOS")
+    print("="*60)
+    
+    try:
+        codigo_intermediario = gerar_codigo_intermediario(tokens)
+        codigo_formatado = formatar_codigo(codigo_intermediario)
+        
+        # Exibe no console
+        for linha in codigo_formatado:
+            print(linha)
+        
+        # Salva em arquivo
+        nome_base = os.path.splitext(aurem_file_location)[0]
+        arquivo_saida = f"{nome_base}.3ac"
+        salvar_codigo(codigo_formatado, arquivo_saida)
+        
+        print("\n" + "-"*60)
+        print(f"✓ Código intermediário salvo em: {arquivo_saida}")
+        print(f"✓ Total de instruções geradas: {len([l for l in codigo_intermediario if l.strip() and not l.startswith('#') and not l.endswith(':')])}")
+        
+    except Exception as e:
+        print(f"✗ Erro na geração de código intermediário: {e}")
+else:
+    print("\n" + "="*50)
+    print("GERAÇÃO DE CÓDIGO INTERMEDIÁRIO")
+    print("="*50)
+    print("✗ Código intermediário não gerado devido a erros anteriores.")
+

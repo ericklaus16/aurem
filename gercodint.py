@@ -24,6 +24,8 @@ class GeradorCodigoIntermediario:
         self.temp_count = 0  # Contador de temporários
         self.label_count = 0  # Contador de labels
         self.tabela_simbolos = {}  # {nome_var: {'tipo': tipo, 'is_array': bool}}
+        self.tamanho_tipos = {'int': 4, 'float': 8, 'string': 8, 'bool': 1}  # Tamanho em bytes
+        self.ultima_comparacao = None  # Guarda info da última comparação para if
 
     def novo_temp(self):
         """Gera um novo temporário"""
@@ -136,18 +138,31 @@ class GeradorCodigoIntermediario:
                     op = self.token_atual()[1]
                     self.avancar()  # consome operador
                     
+                    # Obtém tamanho do tipo para cálculo de offset
+                    tipo_elem = 'int'
+                    if nome_var in self.tabela_simbolos:
+                        tipo_elem = self.tabela_simbolos[nome_var]['tipo']
+                    tamanho = self.tamanho_tipos.get(tipo_elem, 4)
+                    
+                    # Formato do slide: T1 = addr(a), T2 = i*4, T1[T2] = valor
+                    temp_addr = self.novo_temp()
+                    self.emitir(f"{temp_addr} = addr({nome_var})")
+                    
+                    temp_offset = self.novo_temp()
+                    self.emitir(f"{temp_offset} = {indice_temp} * {tamanho}")
+                    
                     if op == '=':
                         temp_expr, _ = self.gerar_expressao()
-                        self.emitir(f"{nome_var}[{indice_temp}] = {temp_expr}")
+                        self.emitir(f"{temp_addr}[{temp_offset}] = {temp_expr}")
                     else:
                         # Operador composto em array (+=, -=, etc.)
                         op_base = op[0]  # '+=' -> '+'
                         temp_atual = self.novo_temp()
-                        self.emitir(f"{temp_atual} = {nome_var}[{indice_temp}]")
+                        self.emitir(f"{temp_atual} = {temp_addr}[{temp_offset}]")
                         temp_expr, _ = self.gerar_expressao()
                         temp_result = self.novo_temp()
                         self.emitir(f"{temp_result} = {temp_atual} {op_base} {temp_expr}")
-                        self.emitir(f"{nome_var}[{indice_temp}] = {temp_result}")
+                        self.emitir(f"{temp_addr}[{temp_offset}] = {temp_result}")
             else:
                 op = prox_value
                 self.avancar()  # consome operador
@@ -208,10 +223,21 @@ class GeradorCodigoIntermediario:
         """Gera código para inicialização de array literal"""
         self.avancar()  # consome '{'
         
+        # Obtém tamanho do tipo do elemento
+        tipo_elem = 'int'
+        if nome_var in self.tabela_simbolos:
+            tipo_elem = self.tabela_simbolos[nome_var]['tipo']
+        tamanho = self.tamanho_tipos.get(tipo_elem, 4)
+        
+        # Formato do slide: T1 = addr(a), T1[offset] = valor
+        temp_addr = self.novo_temp()
+        self.emitir(f"{temp_addr} = addr({nome_var})")
+        
         indice = 0
         while self.pos < len(self.tokens) and self.token_atual()[0] != 'FECHA_CHAVE':
             temp_elem, _ = self.gerar_expressao()
-            self.emitir(f"{nome_var}[{indice}] = {temp_elem}")
+            offset = indice * tamanho
+            self.emitir(f"{temp_addr}[{offset}] = {temp_elem}")
             indice += 1
 
             if self.token_atual()[0] == 'VIRGULA':
@@ -262,6 +288,8 @@ class GeradorCodigoIntermediario:
                 op = value
                 self.avancar()
                 temp_dir, tipo_dir = self.gerar_expressao_aditiva()
+                # Guarda informação da comparação para uso no if
+                self.ultima_comparacao = (temp_esq, op, temp_dir)
                 temp_result = self.novo_temp()
                 self.emitir(f"{temp_result} = {temp_esq} {op} {temp_dir}")
                 temp_esq = temp_result
@@ -372,13 +400,22 @@ class GeradorCodigoIntermediario:
                 if self.token_atual()[0] == 'FECHA_COLCHETE':
                     self.avancar()  # consome ']'
 
-                temp_result = self.novo_temp()
-                self.emitir(f"{temp_result} = {nome_var}[{indice_temp}]")
-                
-                # Obtém tipo do elemento
-                tipo = 'unknown'
+                # Obtém tipo do elemento e tamanho
+                tipo = 'int'
                 if nome_var in self.tabela_simbolos:
                     tipo = self.tabela_simbolos[nome_var]['tipo']
+                tamanho = self.tamanho_tipos.get(tipo, 4)
+                
+                # Formato do slide: T1 = addr(a), T2 = i*4, T3 = T1[T2]
+                temp_addr = self.novo_temp()
+                self.emitir(f"{temp_addr} = addr({nome_var})")
+                
+                temp_offset = self.novo_temp()
+                self.emitir(f"{temp_offset} = {indice_temp} * {tamanho}")
+                
+                temp_result = self.novo_temp()
+                self.emitir(f"{temp_result} = {temp_addr}[{temp_offset}]")
+                
                 return temp_result, tipo
 
             # Variável simples
@@ -439,8 +476,16 @@ class GeradorCodigoIntermediario:
         # Usa label externo se existir (para else if encadeado)
         label_fim = label_fim_externo if label_fim_externo else self.novo_label()
 
-        # Desvio condicional: se falso, vai para else
-        self.emitir(f"ifFalse {temp_cond} goto {label_else}")
+        # Desvio condicional usando comparação direta (estilo slides)
+        # Inverte a condição para saltar quando falso
+        if self.ultima_comparacao:
+            esq, op, dir = self.ultima_comparacao
+            # Inverte o operador para o salto
+            op_invertido = {'==': '!=', '!=': '==', '<': '>=', '>': '<=', '<=': '>', '>=': '<'}.get(op, op)
+            self.emitir(f"if {esq} {op_invertido} {dir} goto {label_else}")
+            self.ultima_comparacao = None
+        else:
+            self.emitir(f"if {temp_cond} == false goto {label_else}")
 
         # Gera código do bloco then
         self.gerar_comando()
@@ -494,8 +539,14 @@ class GeradorCodigoIntermediario:
         if self.token_atual()[0] == 'FECHA_PAREN':
             self.avancar()
 
-        # Se condição falsa, sai do loop
-        self.emitir(f"ifFalse {temp_cond} goto {label_fim}")
+        # Desvio condicional usando comparação direta (estilo slides)
+        if self.ultima_comparacao:
+            esq, op, dir = self.ultima_comparacao
+            op_invertido = {'==': '!=', '!=': '==', '<': '>=', '>': '<=', '<=': '>', '>=': '<'}.get(op, op)
+            self.emitir(f"if {esq} {op_invertido} {dir} goto {label_fim}")
+            self.ultima_comparacao = None
+        else:
+            self.emitir(f"if {temp_cond} == false goto {label_fim}")
 
         # Gera código do corpo
         self.gerar_comando()
@@ -554,8 +605,14 @@ class GeradorCodigoIntermediario:
         if self.token_atual()[0] == 'PONTO_VIRGULA':
             self.avancar()  # consome ';'
 
-        # Se condição falsa, sai
-        self.emitir(f"ifFalse {temp_cond} goto {label_fim}")
+        # Desvio condicional usando comparação direta (estilo slides)
+        if self.ultima_comparacao:
+            esq, op, dir = self.ultima_comparacao
+            op_invertido = {'==': '!=', '!=': '==', '<': '>=', '>': '<=', '<=': '>', '>=': '<'}.get(op, op)
+            self.emitir(f"if {esq} {op_invertido} {dir} goto {label_fim}")
+            self.ultima_comparacao = None
+        else:
+            self.emitir(f"if {temp_cond} == false goto {label_fim}")
 
         # Salva a posição para processar incremento depois
         pos_incremento = self.pos
@@ -680,7 +737,7 @@ def formatar_codigo(codigo):
             resultado.append(linha)
         else:
             num_instrucao += 1
-            resultado.append(f"({num_instrucao:3d}) {linha}")
+            resultado.append(f"({num_instrucao}) {linha}")
     
     return resultado
 

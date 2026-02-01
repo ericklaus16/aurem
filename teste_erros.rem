@@ -1,0 +1,46 @@
+>>> Arquivo de teste para o analisador semântico da linguagem AUREM
+>>> Este arquivo contém erros semânticos propositais
+
+>>> ERRO 1: Uso de variável não declarada
+$x<int>;
+$x = $naoDeclarada + 5;
+
+>>> ERRO 2: Operador aritmético com tipo booleano
+$flag<bool> = true;
+$resultado<int> = $flag * 2;
+
+>>> ERRO 3: Atribuição de tipos incompatíveis
+$numero<int> = 10;
+$texto<string> = "ola";
+$numero = $texto;
+
+>>> ERRO 4: Operador composto com string
+$msg<string> = "hello";
+$msg -= 1;
+
+>>> ERRO 5: Acesso de array com índice não inteiro
+$lista<int[]> = {1, 2, 3};
+$valor<int> = $lista["indice"];
+
+>>> ERRO 6: Acesso de índice em variável que não é array
+$simples<int> = 5;
+$test<int> = $simples[0];
+
+>>> ERRO 7: Redeclaração de variável no mesmo escopo
+$idade<int> = 25;
+$idade<float> = 25.5;
+
+>>> OK: Variáveis usadas corretamente
+$a<int> = 10;
+$b<float> = 20.5;
+$c<float> = $a + $b;
+
+>>> OK: Concatenação de string
+$nome<string> = "Mundo";
+print("Olá " + $nome);
+
+>>> OK: Array e acesso com índice inteiro
+$nums<int[]> = {1, 2, 3};
+$primeiro<int> = $nums[0];
+$i<int> = 1;
+$segundo<int> = $nums[$i];

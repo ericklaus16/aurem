@@ -1,0 +1,19 @@
+>>> Teste de verificação de tipos em arrays
+
+>>> ERRO 1: Atribuir string a array de int
+$lista<int[]> = "teste";
+
+>>> ERRO 2: Atribuir array de string a array de int
+$nums<int[]> = {"a", "b", "c"};
+
+>>> ERRO 3: Atribuir int a array de int (deveria ser array literal)
+$valores<int[]> = 42;
+
+>>> OK: Array de int com valores int
+$ok1<int[]> = {1, 2, 3};
+
+>>> OK: Array de string com valores string
+$ok2<string[]> = {"a", "b"};
+
+>>> OK: Array de float com valores int (coerção)
+$ok3<float[]> = {1, 2, 3};

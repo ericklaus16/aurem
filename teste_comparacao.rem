@@ -1,0 +1,24 @@
+>>> Teste de comparação entre tipos incompatíveis
+
+$idade<int> = 25;
+$nome<string> = "teste";
+
+>>> ERRO: Comparar int > string
+if($idade > $nome) {
+    print("isso deveria dar erro");
+}
+
+>>> ERRO: Comparar string == int
+if($nome == 10) {
+    print("outro erro");
+}
+
+>>> OK: Comparar int com int
+if($idade > 18) {
+    print("maior de idade");
+}
+
+>>> OK: Comparar string com string
+if($nome == "teste") {
+    print("ok");
+}

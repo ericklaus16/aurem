@@ -7,7 +7,7 @@ from gercodint import gerar_codigo_intermediario, formatar_codigo, salvar_codigo
 # aurem_file_location = str(input("Type the aurem source code location: "))
 code = []
 
-aurem_file_location = "primeiro.rem"
+aurem_file_location = "segundo.rem"
 
 with open(aurem_file_location, "r", encoding="utf-8") as aurem_file:
     for line in aurem_file:

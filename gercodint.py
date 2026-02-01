@@ -26,6 +26,7 @@ class GeradorCodigoIntermediario:
         self.tabela_simbolos = {}  # {nome_var: {'tipo': tipo, 'is_array': bool}}
         self.tamanho_tipos = {'int': 4, 'float': 8, 'string': 8, 'bool': 1}  # Tamanho em bytes
         self.ultima_comparacao = None  # Guarda info da última comparação para if
+        self.contexto_condicional = False  # True quando gerando condição para if/while/for
 
     def novo_temp(self):
         """Gera um novo temporário"""
@@ -290,10 +291,33 @@ class GeradorCodigoIntermediario:
                 temp_dir, tipo_dir = self.gerar_expressao_aditiva()
                 # Guarda informação da comparação para uso no if
                 self.ultima_comparacao = (temp_esq, op, temp_dir)
-                temp_result = self.novo_temp()
-                self.emitir(f"{temp_result} = {temp_esq} {op} {temp_dir}")
-                temp_esq = temp_result
-                tipo_esq = 'bool'
+                
+                if self.contexto_condicional:
+                    # Em contexto condicional, NÃO gera temporário
+                    # O if/while/for usará diretamente a comparação
+                    temp_esq = f"{temp_esq} {op} {temp_dir}"  # Representação simbólica
+                    tipo_esq = 'bool'
+                else:
+                    # Fora de contexto condicional (atribuição), usa esquema formal do PDF:
+                    # if a < b goto L1
+                    # t = 0
+                    # goto L2
+                    # L1: t = 1
+                    # L2:
+                    label_true = self.novo_label()
+                    label_fim = self.novo_label()
+                    temp_result = self.novo_temp()
+                    
+                    self.emitir(f"if {temp_esq} {op} {temp_dir} goto {label_true}")
+                    self.emitir(f"{temp_result} = 0")
+                    self.emitir(f"goto {label_fim}")
+                    self.emitir(f"{label_true}:")
+                    self.emitir(f"{temp_result} = 1")
+                    self.emitir(f"{label_fim}:")
+                    
+                    temp_esq = temp_result
+                    tipo_esq = 'bool'
+                    self.ultima_comparacao = None  # Já foi processada
             else:
                 break
 
@@ -466,8 +490,10 @@ class GeradorCodigoIntermediario:
         if self.token_atual()[0] == 'ABRE_PAREN':
             self.avancar()  # consome '('
 
-        # Gera código para condição
+        # Gera código para condição (em contexto condicional)
+        self.contexto_condicional = True
         temp_cond, _ = self.gerar_expressao()
+        self.contexto_condicional = False
 
         if self.token_atual()[0] == 'FECHA_PAREN':
             self.avancar()  # consome ')'
@@ -533,8 +559,10 @@ class GeradorCodigoIntermediario:
         if self.token_atual()[0] == 'ABRE_PAREN':
             self.avancar()
 
-        # Gera código para condição
+        # Gera código para condição (em contexto condicional)
+        self.contexto_condicional = True
         temp_cond, _ = self.gerar_expressao()
+        self.contexto_condicional = False
 
         if self.token_atual()[0] == 'FECHA_PAREN':
             self.avancar()
@@ -599,8 +627,10 @@ class GeradorCodigoIntermediario:
         # Label de início
         self.emitir(f"{label_inicio}:")
 
-        # Condição
+        # Condição (em contexto condicional)
+        self.contexto_condicional = True
         temp_cond, _ = self.gerar_expressao()
+        self.contexto_condicional = False
 
         if self.token_atual()[0] == 'PONTO_VIRGULA':
             self.avancar()  # consome ';'

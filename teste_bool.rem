@@ -1,0 +1,6 @@
+﻿$x<int> = 10;
+$y<int> = 20;
+$resultado<bool> = $x < $y;
+if($resultado) {
+    print("verdadeiro");
+}

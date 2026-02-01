@@ -676,7 +676,6 @@ class AnalisadorSemantico:
 
 
 def analisar_semantica(tokens):
-    """Função principal para executar análise semântica"""
     analisador = AnalisadorSemantico(tokens)
     erros, avisos = analisador.analisar()
     return erros, avisos
